@@ -44,6 +44,29 @@ contract RationalNumbers {
         return (left.x == right.x && left.y == right.y);
     }
 
+    function matMul(
+        uint256[] calldata matrix,
+        uint256 n, // n x n for the matrix
+        ECPoint[] calldata s, // n elements
+        ECPoint[] calldata o // n elements
+    ) public view returns (bool verified) {
+        if (matrix.length != n * n || s.length != n || o.length != n) {
+            revert();
+        }
+
+        for (uint i = 0; i < n; i++) {
+            ECPoint memory Ms = scalar_mul(s[0], matrix[i * n]);
+            for (uint j = 1; j < n; j++) {
+                Ms = add(Ms, scalar_mul(s[j], matrix[i * n + j]));
+            }
+            if (Ms.x != o[i].x || Ms.y != o[i].y) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+
     function expmod(uint base, uint e, uint m) public view returns (uint o) {
         assembly {
             // define pointer
